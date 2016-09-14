@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+
+<body>
+    <canvas id="cvs" width="800" height="600" style="border: 1px solid #ccc"></canvas>
+    <script src="js/common.js"></script>
+    <script src="js/bird.js"></script>
+    <script src="js/land.js"></script>
+    <script src="js/pipe.js"></script>
+    <script src="js/sky.js"></script>
+    <script src="js/getGameObj.js"></script>
+    <script type="text/javascript">
+    // 获取画布;
+    var nCvs = document.getElementById("cvs");
+    // 获取2D绘制环境
+    var ctx = nCvs.getContext("2d");
+
+
+    (function() {
+        // 调用getGameObj;
+        getGameObj(function(imgObj) {
+           // ============================================
+            // 初始化小鸟对象
+            Bird.init(imgObj["birds"])
+
+            // 创建一个小鸟对象;
+            var nBirds = new Bird(nCvs, ctx, 100, 100, 52, 45);
+            // 点击画布小鸟坠落速度
+            nCvs.addEventListener("click", function() {
+                nBirds.speed = -2;
+            });
+            // 初始化天空对象
+            Sky.init(imgObj["sky"]);
+            // 创建一个天空对象
+            var Skys = [];
+            for (var i = 0; i < 2; i++) {
+                Skys.push(new Sky(nCvs, ctx, imgObj["sky"].width * i))
+            }
+
+
+            //初始化大地对象;
+            Land.init(imgObj["land"]);
+            //  创建一个大地对象
+            var Lands = [];
+            for (var i = 0; i < 4; i++) {
+                Lands.push(new Land(nCvs, ctx, imgObj["land"].width * i));
+            }
+
+
+            // 初始化管道;
+            Pipe.init(imgObj['pipeDown'], imgObj['pipeUp']);
+
+
+            // 为了防止游戏还没开始就结束了，所以第一个管道需要有一个比较大的间隔
+            // 管道之间的距离是2个管道宽
+            var Pipes = [];
+            for (var i = 0; i < 6; i++) {
+                Pipes.push(new Pipe(nCvs, ctx, 300 + imgObj['pipeDown'].width * 3 * i));
+            }
+
+
+            // 
+            var timer = setInterval(function() {
+                if (ctx.isPointInPath(nBirds.x + nBirds.width / 2, nBirds.y + nBirds.height / 2)) {
+                    clearInterval(timer);
+                }
+
+                ctx.clearRect(0, 0, nCvs.width, nCvs.height)
+                ctx.beginPath();
+
+                Skys.forEach(function(element, index) {
+                    element.draw();
+                    element.update();
+                });
+
+                // 管道
+
+                Pipes.forEach(function(element, index) {
+                    element.draw();
+                    element.update();
+                });
+
+
+                // 大地
+                Lands.forEach(function(element, index) {
+                    element.draw();
+                    element.update();
+                });
+
+
+                // 小鸟
+                nBirds.draw();
+                nBirds.update();
+
+            }, 1000 / 70)
+
+        });
+    }())
+    </script>
+</body>
+
+</html>
